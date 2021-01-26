@@ -31,7 +31,12 @@
         android:id="@+id/navigation_location"
         android:name="com.example.arcgisair.ui.location.LocationFragment"
         android:label="Locations"
-        tools:layout="@layout/fragment_location" />
+        tools:layout="@layout/fragment_location" >
+        <action
+            android:id="@+id/action_navigation_location_pop"
+            app:popUpTo="@id/navigation_location"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 
 </navigation>
