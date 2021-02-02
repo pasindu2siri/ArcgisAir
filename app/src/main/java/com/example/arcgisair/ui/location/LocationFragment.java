@@ -2,6 +2,7 @@ package com.example.arcgisair.ui.location;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -10,6 +11,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -40,11 +43,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pl.droidsonroids.gif.GifDrawable;
+import pl.droidsonroids.gif.GifImageView;
 
 public class LocationFragment extends Fragment {
 
     private LocationViewModel locationViewModel;
     JSONArray jsonArray;
+    JSONObject jsonObject;
     Double lon;
     Double lat;
     String city;
@@ -52,6 +57,9 @@ public class LocationFragment extends Fragment {
     TextView Place;
     TextView Date;
     TextView Status;
+    GifImageView Pic;
+    String Type;
+
 
 
 
@@ -71,24 +79,30 @@ public class LocationFragment extends Fragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.hideBottomNav();
 
+
         lon = Double.valueOf(df.format(getArguments().getDouble("Longitude")));
         lat = Double.valueOf(df.format(getArguments().getDouble("Latitude")));
 
-        Log.i("Lon", String.valueOf(lon));
-        Log.i("Lat", String.valueOf(lat));
+       // Log.i("Lon", String.valueOf(lon));
+       // Log.i("Lat", String.valueOf(lat));
+
 
         city = getArguments().getString("City");
-
+        Log.i("City", city);
         AQI = root.findViewById(R.id.airQuality);
         Place  = root.findViewById(R.id.city);
         Date = root.findViewById(R.id.date);
         Status = root.findViewById(R.id.status);
+        Pic = root.findViewById(R.id.background);
+
+
 
 
         //root.setBackgroundColor(R.drawable.bg_gradient);
 
-
+        getWeather(city);
         getAP(lon, lat);
+
         return root;
     }
 
@@ -128,7 +142,7 @@ public class LocationFragment extends Fragment {
 
                     reader.close();
                     jsonArray = new JSONArray(json.toString());
-                    System.out.println(jsonArray.toString());
+                    //System.out.println(jsonArray.toString());
 
 
                 } catch (Exception e) {
@@ -153,14 +167,88 @@ public class LocationFragment extends Fragment {
 
 
         try {
-            AQI.setText("AQI: " +  String.valueOf(vals.getJSONObject(1).get("AQI")));
+            AQI.setText(String.valueOf(vals.getJSONObject(0).get("AQI")));
 
-            Date.setText(String.valueOf(vals.getJSONObject(1).get("DateIssue")));
-            JSONObject category = (JSONObject) vals.getJSONObject(1).get("Category");
-            Status.setText("Status: " + String.valueOf(category.get("Name")));
-            Status.setText("Hello");
+            Date.setText(String.valueOf(vals.getJSONObject(0).get("DateIssue")));
+            JSONObject category = (JSONObject) vals.getJSONObject(0).get("Category");
+            Status.setText(String.valueOf(category.get("Name")));
+
+            Log.i("Type", Type);
+
+            if(Type.equals("clear")) {
+                Pic.setImageResource(R.drawable.sun);
+
+            } else if(Type.equals("rainy")){
+                Pic.setImageResource(R.drawable.rain);
+            } else if(Type.equals("clouds")){
+                Pic.setImageResource(R.drawable.clouds);
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
+    @SuppressLint("StaticFieldLeak")
+    public void getWeather(String city){
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+
+
+                    URL url = new URL("https://api.openweathermap.org/data/2.5/weather?q=" + city+ "&appid=680ce2ab20370c3d0afbd3ad789183e4");
+
+
+                    StringBuffer json = new StringBuffer(1024);
+                    String tmp = "";
+
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                    BufferedReader reader =
+                            new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+                    while ((tmp = reader.readLine()) != null) {
+                        json.append(tmp).append("\n");
+                    }
+
+
+
+
+
+
+                    reader.close();
+                    JSONObject o1 = new JSONObject(json.toString()).getJSONArray("weather").getJSONObject(0);
+                    Type = o1.getString("main").toString().toLowerCase();
+
+
+
+
+
+
+
+                } catch (Exception e) {
+                    System.out.println("Exception " + e.getMessage());
+                    return null;
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void Void) {
+                if (jsonArray != null) {
+                    applyValues(jsonArray);
+                }
+            }
+        }.execute();
+    }
+
+
+
 }
