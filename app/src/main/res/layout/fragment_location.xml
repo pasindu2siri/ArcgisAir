@@ -50,14 +50,15 @@
             android:layout_width="wrap_content"
             android:layout_height="5dp" />
 
+
         <LinearLayout
             android:id="@+id/overviewContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/addressContainer"
-            android:layout_centerHorizontal="true"
-            android:paddingTop="20dp"
-            android:orientation="vertical">
+            android:layout_marginTop="128dp"
+            android:orientation="vertical"
+            android:paddingTop="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -70,6 +71,7 @@
                     android:layout_gravity="left"
                     android:layout_weight="1"
                     android:orientation="vertical">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -100,6 +102,7 @@
                     android:layout_gravity="right"
                     android:layout_weight="1"
                     android:orientation="vertical">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -115,18 +118,15 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:fontFamily="sans-serif-thin"
-                        android:text=""
                         android:padding="10dp"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textSize="45dp" />
-
-
 
 
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-
 
         <LinearLayout
             android:id="@+id/detailsContainer"
