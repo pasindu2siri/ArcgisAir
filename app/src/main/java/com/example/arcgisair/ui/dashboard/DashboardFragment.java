@@ -1,40 +1,42 @@
 package com.example.arcgisair.ui.dashboard;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.net.Uri;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
+import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.arcgisair.JsonHelper;
 import com.example.arcgisair.MainActivity;
 import com.example.arcgisair.R;
-import com.example.arcgisair.ui.home.HomeFragment;
-import com.example.arcgisair.ui.location.LocationFragment;
-import com.example.arcgisair.ui.location.LocationViewModel;
+import com.example.arcgisair.models.AirQualityNote;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -43,107 +45,140 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DashboardFragment extends Fragment{
 
-    private DashboardViewModel dashboardViewModel;
 
-    ListView listView;
-    Button addButton;
-    EditText getValue;
-    JSONObject jsonObject;
+    private DashboardViewModel dashboardViewModel;
+    private TextView mTextViewEmpty;
+    private ProgressBar mProgressBarLoading;
+    private ImageView mImageViewEmpty;
+    private RecyclerView mRecyclerView;
+    private DashboardFragment.ListAdapter mListadapter;
 
     View root;
+    Button newPopup;
+
+    List<String> cities;
+    JSONObject jsonObject;
+
+    ArrayList data;
     String[] ListElements = new String[] {
-          "Los Angeles"
+            "Torrance",
+            "Gardena"
     };
+    List<String> ListElementsArrayList;
 
-    List<Double> longitude = new ArrayList<>();
-    List<Double> latitude = new ArrayList<>();
-
-    //List<Integer> ZipCodes = new ArrayList<>();
-    List<String> ListElementsArrayList = new ArrayList<>(Arrays.asList(ListElements));
-
-
-    @SuppressLint("WrongConstant")
+    @SuppressLint("ResourceType")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         dashboardViewModel =
                 new ViewModelProvider(this).get(DashboardViewModel.class);
         root = inflater.inflate(R.layout.fragment_dashboard, container, false);
 
-        MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.showBottomNav();
+        mRecyclerView = (RecyclerView) root.findViewById(R.id.recyclerView);
+        mTextViewEmpty = (TextView)root.findViewById(R.id.textViewEmpty);
+        mImageViewEmpty = (ImageView)root.findViewById(R.id.imageViewEmpty);
+        mProgressBarLoading = (ProgressBar)root.findViewById(R.id.progressBarLoading);
 
-        longitude.clear();
-        latitude.clear();
+        newPopup = root.findViewById(R.menu.add_button);
 
-        for(String city: ListElementsArrayList){
-            getJSON(city);
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(layoutManager);
+
+
+        ListElementsArrayList = new ArrayList<>(Arrays.asList(ListElements));
+        data = new ArrayList<AirQualityNote>();
+
+
+        for (int i = 0; i < ListElementsArrayList.size(); i++)
+        {
+            getJSON(i);
         }
 
-
-
-
-
-        listView = root.findViewById(R.id.cities);
-        addButton = root.findViewById(R.id.add);
-        getValue = root.findViewById(R.id.addText);
-
-        final List<String> cities = new ArrayList<String>();
+        cities = new ArrayList<String>();
         cities.addAll(Arrays.asList("Agoura Hills", "Alhambra", "Arcadia", "Artesia", "Avalon", "Azusa", "Baldwin Park", "Bell", "Bell Gardens", "Bellflower", "Beverly Hills", "Bradbury", "Burbank", "Calabasas", "Carson", "Cerritos", "Claremont", "Commerce", "Compton", "Covina", "Cudahy", "Culver City", "Diamond Bar", "Downey", "Duarte", "El Monte", "El Segundo", "Gardena", "Glendale", "Glendora", "Hawaiian Gardens", "Hawthorne", "Hermosa Beach", "Hidden Hills", "Huntington Park" ,"Industry" ,"Inglewood", "Irwindale", "La Cañada" , "Flintridge" , "La Habra Heights", "La Mirada", "La Puente" ,"La Verne", "Lakewood", "Lancaster", "Lawndale" ,"Lomita", "Long Beach" ,"Los Angeles", "Lynwood", "Malibu", "Manhattan" , "BeachMaywood", "Monrovia", "Montebello", "Monterey Park", "Norwalk",  "Palmdale", "Palos Verdes Estates", "Paramount", "Pasadena", "Pico Rivera", "Pomona", "Rancho Palos Verdes", "Redondo Beach", "Rolling Hills", "Rolling Hills Estates", "Rosemead", "San Dimas", "San Fernando", "San Gabriel",  "San Marino", "Santa Clarita", "Santa Fe Springs", "Santa Monica", "Sierra Madre", "Signal Hill", "South El Monte", "South Gate" ,"South Pasadena", "Temple City" ,"Torrance" , "Vernon", "Walnut", "West Covina",  "West Hollywood", "Westlake Village", "Whittier"));
-
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, ListElementsArrayList);
-        listView.setAdapter(adapter);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(cities.contains(getValue.getText().toString()) && !(ListElementsArrayList.contains(getValue.getText().toString()))){
-                    ListElementsArrayList.add(getValue.getText().toString());
-                    adapter.notifyDataSetChanged();
-                    getJSON(getValue.getText().toString());
-                    getValue.getText().clear();
-
-                } else {
-                    Toast.makeText(getContext(), "Oh no", 2);
-
-
-                }
-
-            }
-        });
-
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @SuppressLint("ResourceType")
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    getJSON(adapterView.getItemAtPosition(i).toString());
-                    Bundle bundle  = new Bundle();
-//                    System.out.println("Location: " + i);
-//                    System.out.println("Zippy: " + ZipCodes.get(i));
-//
-                    bundle.putDouble("Longitude", longitude.get(i));
-                    bundle.putDouble("Latitude", latitude.get(i));
-
-                    bundle.putString("City", ListElementsArrayList.get(i));
-
-                    Navigation.findNavController(view).navigate(R.id.action_navigation_dashboard_to_navigation_location, bundle );
-                }
-            }
-        );
 
         return root;
     }
 
 
 
-    
+
+    public class ListAdapter extends RecyclerView.Adapter<DashboardFragment.ListAdapter.ViewHolder>
+    {
+        private ArrayList<AirQualityNote> dataList;
+
+        ImageView imageView = root.findViewById(R.id.card_view_image);
+
+        public ListAdapter(ArrayList<AirQualityNote> data)
+        {
+            this.dataList = data;
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder
+        {
+            TextView textCity;
+            TextView textAQI;
+            ImageView imageAQI;
+
+
+            public ViewHolder(View itemView)
+            {
+                super(itemView);
+                this.textCity = (TextView) itemView.findViewById(R.id.text);
+                this.textAQI = (TextView) itemView.findViewById(R.id.comment);
+                this.imageAQI = (ImageView) itemView.findViewById(R.id.card_view_image);
+            }
+        }
+
+        @Override
+        public DashboardFragment.ListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+        {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aqi_card, parent, false);
+
+            DashboardFragment.ListAdapter.ViewHolder viewHolder = new DashboardFragment.ListAdapter.ViewHolder(view);
+            return viewHolder;
+        }
+
+        @Override
+        public void onBindViewHolder(DashboardFragment.ListAdapter.ViewHolder holder, final int position)
+        {
+            holder.textCity.setText(dataList.get(position).getCity());
+            holder.textAQI.setText(String.valueOf(dataList.get(position).getAQI()));
+            holder.imageAQI.setImageResource(R.drawable.face50);
+
+
+            holder.itemView.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    Toast.makeText(getActivity(), "Item " + position + " is clicked.", Toast.LENGTH_SHORT).show();
+                    Bundle bundle = new Bundle();
+                    bundle.putDouble("Longitude", dataList.get(position).getLongitude());
+                    bundle.putDouble("Latitude", dataList.get(position).getLatitude());
+                    bundle.putString("City", dataList.get(position).getCity());
+
+                    Navigation.findNavController(root).navigate(R.id.action_navigation_dashboard_to_navigation_location, bundle );
+
+                }
+            });
+        }
+
+
+
+        @Override
+        public int getItemCount()
+        {
+            return dataList.size();
+        }
+    }
 
     @SuppressLint("StaticFieldLeak")
-    public void getJSON(final String city) {
+    public void getJSON(final int index) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected void onPreExecute() {
@@ -155,7 +190,7 @@ public class DashboardFragment extends Fragment{
             protected Void doInBackground(Void... params) {
                 try {
 
-                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?address=+" + city + ",+CA&key=AIzaSyD9u_GyzTmYDgT_KoiNwwGni67iPBpNelc");
+                    URL url = new URL("https://api.airvisual.com/v2/city?city=" + ListElementsArrayList.get(index) + "&state=California&country=USA&key=19990c1e-be6d-44ac-9faf-641e5b6038ec");
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                     BufferedReader reader =
@@ -169,27 +204,17 @@ public class DashboardFragment extends Fragment{
                     reader.close();
 
                     jsonObject = new JSONObject(json.toString());
-                    JSONArray m1 = (JSONArray) jsonObject.get("results");
-                    JSONObject m2 = (JSONObject) m1.getJSONObject(0).get("geometry");
+                    JSONObject values = jsonObject.getJSONObject("data");
 
-                    longitude.add(Double.parseDouble(m2.getJSONObject("location").getString("lng")));
-                    latitude.add(Double.parseDouble(m2.getJSONObject("location").getString("lat")));
-
-
-//                    System.out.println("Lon Size:" + longitude.size() + " Lat Size" + latitude.size());
-//                    for(int i = 0; i < latitude.size(); i++){
-//                        System.out.println("Lon: " + longitude.get(i) + "Lat: " + latitude.get(i));
-//                    }
-                    //System.out.println(m2.getJSONObject("location").getString("lat"));
+                    String city = values.getString("city");
+                    int AQI = values.getJSONObject("current").getJSONObject("pollution").getInt("aqius");
+                    double longitude = values.getJSONObject("location").getJSONArray("coordinates").getDouble(0);
+                    double latitude= values.getJSONObject("location").getJSONArray("coordinates").getDouble(1);
 
 
-                    //Log.i("check" , main.);
-//                    JSONArray main = jsonObject.getJSONArray("zip_codes");
-//                    ZipCodes.add(main.getInt(0));
-//
-////                    for(int zip: ZipCodes){
-////                        System.out.println(zip);
-////                    }
+                    AirQualityNote newNote = new AirQualityNote(city, AQI, longitude, latitude, index);
+                    data.add(newNote);
+                    System.out.println(data.size());
 
                 } catch (Exception e) {
                     System.out.println("Exception " + e.getMessage());
@@ -200,8 +225,61 @@ public class DashboardFragment extends Fragment{
 
             @Override
             protected void onPostExecute(Void Void) {
+                mListadapter = new DashboardFragment.ListAdapter(data);
+                mRecyclerView.setAdapter(mListadapter);
             }
         }.execute();
 
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu items for use in the action bar
+        inflater.inflate(R.menu.add_button, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        //This is the layout that you are going to use in your alertdialog
+        final View addView = getLayoutInflater().inflate(R.layout.popup, null);
+
+        final String[] m_Text = {""};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(root.getContext());
+        builder.setTitle("Title");
+
+        // Set up the input
+        final EditText input = new EditText(root.getContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text[0] = input.getText().toString();
+                if(cities.contains(m_Text[0]) && !(ListElementsArrayList.contains(m_Text[0]))) {
+                    ListElementsArrayList.add(m_Text[0]);
+                    mListadapter.notifyDataSetChanged();
+                    getJSON(ListElementsArrayList.size()-1);
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+        return (super.onOptionsItemSelected(item));
     }
 }

@@ -219,18 +219,9 @@ public class LocationFragment extends Fragment {
                     }
 
 
-
-
-
-
                     reader.close();
                     JSONObject o1 = new JSONObject(json.toString()).getJSONArray("weather").getJSONObject(0);
                     Type = o1.getString("main").toString().toLowerCase();
-
-
-
-
-
 
 
                 } catch (Exception e) {
