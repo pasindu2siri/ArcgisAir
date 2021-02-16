@@ -1,31 +1,20 @@
 package com.example.arcgisair.ui.location;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import android.app.ActionBar;
 
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.arcgisair.MainActivity;
 import com.example.arcgisair.R;
 
 import org.json.JSONArray;
@@ -33,16 +22,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
-import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
 public class LocationFragment extends Fragment {
@@ -60,6 +43,11 @@ public class LocationFragment extends Fragment {
     GifImageView Pic;
     String Type;
 
+    CardView cardView;
+
+
+
+
 
 
 
@@ -68,40 +56,42 @@ public class LocationFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         locationViewModel =
                 new ViewModelProvider(this).get(LocationViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_location, container, false);
+        View root = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        this.cardView = root.findViewById(R.id.card_view);
 
 
+//        DecimalFormat df = new DecimalFormat("#.####");
+//        df.setRoundingMode(RoundingMode.CEILING);
+//
+//        MainActivity mainActivity = (MainActivity) getActivity();
+//        mainActivity.hideBottomNav();
+//
+//
+//        lon = Double.valueOf(df.format(getArguments().getDouble("Longitude")));
+//        lat = Double.valueOf(df.format(getArguments().getDouble("Latitude")));
+//
+//       // Log.i("Lon", String.valueOf(lon));
+//       // Log.i("Lat", String.valueOf(lat));
+//
+//
+//        city = getArguments().getString("City");
+//        Log.i("City", city);
+//        AQI = root.findViewById(R.id.airQuality);
+//        Place  = root.findViewById(R.id.city);
+//        Date = root.findViewById(R.id.date);
+//        Status = root.findViewById(R.id.status);
+//        Pic = root.findViewById(R.id.background);
+//
+//
+//
+//
+//        //root.setBackgroundColor(R.drawable.bg_gradient);
+//
+//        getWeather(city);
+//        getAP(lon, lat);
 
-
-        DecimalFormat df = new DecimalFormat("#.####");
-        df.setRoundingMode(RoundingMode.CEILING);
-
-        MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.hideBottomNav();
-
-
-        lon = Double.valueOf(df.format(getArguments().getDouble("Longitude")));
-        lat = Double.valueOf(df.format(getArguments().getDouble("Latitude")));
-
-       // Log.i("Lon", String.valueOf(lon));
-       // Log.i("Lat", String.valueOf(lat));
-
-
-        city = getArguments().getString("City");
-        Log.i("City", city);
-        AQI = root.findViewById(R.id.airQuality);
-        Place  = root.findViewById(R.id.city);
-        Date = root.findViewById(R.id.date);
-        Status = root.findViewById(R.id.status);
-        Pic = root.findViewById(R.id.background);
-
-
-
-
-        //root.setBackgroundColor(R.drawable.bg_gradient);
-
-        getWeather(city);
-        getAP(lon, lat);
+        cardView.setCardBackgroundColor(getResources().getColor(R.color.healthy));
 
         return root;
     }
