@@ -2,11 +2,16 @@ package com.example.arcgisair.ui.dashboard;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.AssetManager;
+import android.graphics.Color;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -26,48 +32,56 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arcgisair.MainActivity;
 import com.example.arcgisair.R;
 import com.example.arcgisair.models.AirQualityNote;
+import com.example.arcgisair.models.DummyDataReader;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class DashboardFragment extends Fragment{
 
 
     private DashboardViewModel dashboardViewModel;
-    private TextView mTextViewEmpty;
-    private ProgressBar mProgressBarLoading;
-    private ImageView mImageViewEmpty;
+    private GridLayoutManager gridLayoutManager;
     private RecyclerView mRecyclerView;
-    private DashboardFragment.ListAdapter mListadapter;
+    private static RecyclerView.Adapter adapter;
 
     View root;
-    Button newPopup;
 
     List<String> cities;
     JSONObject jsonObject;
+    ImageView addButton;
+
+
 
     ArrayList data;
-    String[] ListElements = new String[] {
-            "Torrance",
-            "Gardena"
-    };
+    String[] ListElements;
     List<String> ListElementsArrayList;
 
     @SuppressLint("ResourceType")
@@ -78,19 +92,67 @@ public class DashboardFragment extends Fragment{
         root = inflater.inflate(R.layout.fragment_dashboard, container, false);
 
         mRecyclerView = (RecyclerView) root.findViewById(R.id.recyclerView);
-        mTextViewEmpty = (TextView)root.findViewById(R.id.textViewEmpty);
-        mImageViewEmpty = (ImageView)root.findViewById(R.id.imageViewEmpty);
-        mProgressBarLoading = (ProgressBar)root.findViewById(R.id.progressBarLoading);
 
-        newPopup = root.findViewById(R.menu.add_button);
 
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(layoutManager);
+        gridLayoutManager = new  GridLayoutManager(getActivity(), 1);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        mRecyclerView.setLayoutManager(gridLayoutManager);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mainActivity.showBottomNav();
+
+
+
+        addButton = root.findViewById(R.id.addButton);
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View view) {
+
+                final String[] m_Text = {""};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(root.getContext());
+                builder.setTitle("Add City");
+
+                // Set up the input
+                final EditText input = new EditText(root.getContext());
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+
+                // Set up the buttons
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        m_Text[0] = input.getText().toString();
+                        if(cities.contains(m_Text[0]) && !(ListElementsArrayList.contains(m_Text[0]))) {
+                            ListElementsArrayList.add(m_Text[0]);
+                            adapter.notifyDataSetChanged();
+                            getJSON(ListElementsArrayList.size()-1);
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
+            }
+
+
+        });
+
+
+        String citiesList = new DummyDataReader(getActivity()).ReadTextFromFile("cities.txt");
+
+        ListElements = (citiesList.split(","));
 
 
         ListElementsArrayList = new ArrayList<>(Arrays.asList(ListElements));
         data = new ArrayList<AirQualityNote>();
+        Collections.sort(ListElementsArrayList);
 
 
         for (int i = 0; i < ListElementsArrayList.size(); i++)
@@ -104,16 +166,12 @@ public class DashboardFragment extends Fragment{
         return root;
     }
 
-
-
-
-    public class ListAdapter extends RecyclerView.Adapter<DashboardFragment.ListAdapter.ViewHolder>
+    public class CustomAdapter extends RecyclerView.Adapter<DashboardFragment.CustomAdapter.ViewHolder>
     {
         private ArrayList<AirQualityNote> dataList;
 
-        ImageView imageView = root.findViewById(R.id.card_view_image);
 
-        public ListAdapter(ArrayList<AirQualityNote> data)
+        public CustomAdapter(ArrayList<AirQualityNote> data)
         {
             this.dataList = data;
         }
@@ -121,34 +179,70 @@ public class DashboardFragment extends Fragment{
         public class ViewHolder extends RecyclerView.ViewHolder
         {
             TextView textCity;
+            TextView mainPollutant;
+            TextView textDescription;
             TextView textAQI;
-            ImageView imageAQI;
-
+            CardView cardView;
+            ImageView imageView;
+            LinearLayout linearLayout;
+            TextView textWeather;
+            TextView textWind;
+            TextView textHumidity;
+            TextView textPressure;
 
             public ViewHolder(View itemView)
             {
                 super(itemView);
-                this.textCity = (TextView) itemView.findViewById(R.id.text);
-                this.textAQI = (TextView) itemView.findViewById(R.id.comment);
-                this.imageAQI = (ImageView) itemView.findViewById(R.id.card_view_image);
+                this.textCity = itemView.findViewById(R.id.city);
+                this.imageView = itemView.findViewById(R.id.card_view_image);
+                this.textAQI = itemView.findViewById(R.id.AQI);
+                this.textDescription = itemView.findViewById(R.id.description);
+                this.mainPollutant = itemView.findViewById(R.id.mainPollutant);
+                this.linearLayout =  itemView.findViewById(R.id.card_layout);
+                this.cardView = itemView.findViewById(R.id.card_view);
+                this.textWeather = itemView.findViewById(R.id.weather);
+                this.textWind = itemView.findViewById(R.id.wind);
+                this.textHumidity = itemView.findViewById(R.id.humidity);
+                this.textPressure = itemView.findViewById(R.id.pressure);
             }
         }
 
         @Override
-        public DashboardFragment.ListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+        public DashboardFragment.CustomAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
         {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aqi_card, parent, false);
 
-            DashboardFragment.ListAdapter.ViewHolder viewHolder = new DashboardFragment.ListAdapter.ViewHolder(view);
+            DashboardFragment.CustomAdapter.ViewHolder viewHolder = new ViewHolder(view);
             return viewHolder;
         }
 
+
         @Override
-        public void onBindViewHolder(DashboardFragment.ListAdapter.ViewHolder holder, final int position)
+        public void onBindViewHolder(DashboardFragment.CustomAdapter.ViewHolder holder, final int position)
         {
             holder.textCity.setText(dataList.get(position).getCity());
-            holder.textAQI.setText(String.valueOf(dataList.get(position).getAQI()));
-            holder.imageAQI.setImageResource(R.drawable.face50);
+            holder.textAQI.setText("AQI: " + (dataList.get(position).getAQI()));
+            holder.textWeather.setText(String.valueOf(dataList.get(position).getWeather()));
+            holder.textWind.setText(String.valueOf(dataList.get(position).getWind()));
+            holder.textHumidity.setText((dataList.get(position).getHumidity()) + " %");
+            holder.textPressure.setText((dataList.get(position).getPressure()) + " hpa");
+            holder.mainPollutant.setText("Main Pollutant: "  + dataList.get(position).getPollutant());
+
+
+            if(dataList.get(position).getAQI() < 50 ){
+                holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.healthy));
+                holder.textDescription.setText("Good");
+                holder.imageView.setImageResource(R.drawable.face0);
+            } else if(dataList.get(position).getAQI() >= 50 || dataList.get(position).getAQI() < 100 ){
+                holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.unhealthy));
+                holder.textDescription.setText("Fair");
+                holder.imageView.setImageResource(R.drawable.face50);
+            } else {
+                holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.danger));
+                holder.textDescription.setText("Bad");
+                holder.imageView.setImageResource(R.drawable.face100);
+            }
+
 
 
             holder.itemView.setOnClickListener(new View.OnClickListener()
@@ -190,7 +284,7 @@ public class DashboardFragment extends Fragment{
             protected Void doInBackground(Void... params) {
                 try {
 
-                    URL url = new URL("https://api.airvisual.com/v2/city?city=" + ListElementsArrayList.get(index) + "&state=California&country=USA&key=19990c1e-be6d-44ac-9faf-641e5b6038ec");
+                    URL url = new URL("https://api.airvisual.com/v2/city?city=" + ListElementsArrayList.get(index) + "&state=California&country=USA&key=4244a7c4-ff82-47a5-94e5-0ab8dfef931b");
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                     BufferedReader reader =
@@ -208,13 +302,48 @@ public class DashboardFragment extends Fragment{
 
                     String city = values.getString("city");
                     int AQI = values.getJSONObject("current").getJSONObject("pollution").getInt("aqius");
+                    String mainPollutant = values.getJSONObject("current").getJSONObject("pollution").getString("mainus");
+                    String pollutant;
+                    if(mainPollutant.equals("p1")){
+                        pollutant = "PM10";
+                    } else if(mainPollutant.equals("p2")) {
+                        pollutant = "PM2.5";
+                    } else if(mainPollutant.equals("o3")) {
+                        pollutant = "Ozone (O3)";
+                    } else if(mainPollutant.equals("n2")) {
+                        pollutant = "Nitrogen Dioxide (NO2)";
+                    } else if(mainPollutant.equals("s2")) {
+                        pollutant = "Sulfur Dioxide (SO2)";
+                    } else {
+                        pollutant = "Carbon Monoxide (CO)";
+                    }
+
                     double longitude = values.getJSONObject("location").getJSONArray("coordinates").getDouble(0);
                     double latitude= values.getJSONObject("location").getJSONArray("coordinates").getDouble(1);
+                    int Celsius = values.getJSONObject("current").getJSONObject("weather").getInt("tp");
+
+                    int weather = Celsius * (9/ 5) + 32;
+                    String windSpeed = String.valueOf(values.getJSONObject("current").getJSONObject("weather").getInt("ws"));
+                    int wind = values.getJSONObject("current").getJSONObject("weather").getInt("wd");
+                    String totalWind;
+                    if(wind >  270){
+                        totalWind = "NW " + wind;
+                    } else if( wind > 180){
+                        totalWind = "SW " + wind;
+                    }else if( wind > 180){
+                        totalWind = "SE " + wind;
+                    } else {
+                        totalWind = "NE " + wind;
+                    }
+
+                    int humidity = values.getJSONObject("current").getJSONObject("weather").getInt("hu");
+                    int pressure = values.getJSONObject("current").getJSONObject("weather").getInt("pr");
 
 
-                    AirQualityNote newNote = new AirQualityNote(city, AQI, longitude, latitude, index);
+                    AirQualityNote newNote = new AirQualityNote(city, AQI, longitude, latitude, pollutant, weather, totalWind, humidity, pressure,  index);
+
+
                     data.add(newNote);
-                    System.out.println(data.size());
 
                 } catch (Exception e) {
                     System.out.println("Exception " + e.getMessage());
@@ -225,8 +354,9 @@ public class DashboardFragment extends Fragment{
 
             @Override
             protected void onPostExecute(Void Void) {
-                mListadapter = new DashboardFragment.ListAdapter(data);
-                mRecyclerView.setAdapter(mListadapter);
+
+                adapter = new CustomAdapter(data);
+                mRecyclerView.setAdapter(adapter);
             }
         }.execute();
 
@@ -235,51 +365,7 @@ public class DashboardFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Inflate the menu items for use in the action bar
-        inflater.inflate(R.menu.add_button, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        //This is the layout that you are going to use in your alertdialog
-        final View addView = getLayoutInflater().inflate(R.layout.popup, null);
-
-        final String[] m_Text = {""};
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(root.getContext());
-        builder.setTitle("Title");
-
-        // Set up the input
-        final EditText input = new EditText(root.getContext());
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
-
-        // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                m_Text[0] = input.getText().toString();
-                if(cities.contains(m_Text[0]) && !(ListElementsArrayList.contains(m_Text[0]))) {
-                    ListElementsArrayList.add(m_Text[0]);
-                    mListadapter.notifyDataSetChanged();
-                    getJSON(ListElementsArrayList.size()-1);
-                }
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
-        return (super.onOptionsItemSelected(item));
+        setHasOptionsMenu(false);
     }
 }

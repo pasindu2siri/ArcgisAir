@@ -175,13 +175,13 @@ public class LocationFragment extends Fragment {
 
             Log.i("Type", Type);
 
-            if(Type.equals("clear")) {
-                Pic.setImageResource(R.drawable.sun);
 
-            } else if(Type.equals("rainy")){
+            if(Type.equals("rainy")){
                 Pic.setImageResource(R.drawable.rain);
             } else if(Type.equals("clouds")){
                 Pic.setImageResource(R.drawable.clouds);
+            } else {
+                    Pic.setImageResource(R.drawable.sun);
             }
 
         } catch (JSONException e) {
