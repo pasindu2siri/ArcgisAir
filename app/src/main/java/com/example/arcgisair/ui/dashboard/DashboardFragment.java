@@ -51,6 +51,9 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +66,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class DashboardFragment extends Fragment{
 
@@ -97,9 +102,13 @@ public class DashboardFragment extends Fragment{
         gridLayoutManager = new  GridLayoutManager(getActivity(), 1);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
+
+
         mRecyclerView.setLayoutManager(gridLayoutManager);
         MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.showBottomNav();
+
+
 
 
 
@@ -146,6 +155,8 @@ public class DashboardFragment extends Fragment{
 
 
         String citiesList = new DummyDataReader(getActivity()).ReadTextFromFile("cities.txt");
+
+
 
         ListElements = (citiesList.split(","));
 
@@ -284,7 +295,7 @@ public class DashboardFragment extends Fragment{
             protected Void doInBackground(Void... params) {
                 try {
 
-                    URL url = new URL("https://api.airvisual.com/v2/city?city=" + ListElementsArrayList.get(index) + "&state=California&country=USA&key=4244a7c4-ff82-47a5-94e5-0ab8dfef931b");
+                    URL url = new URL("https://api.airvisual.com/v2/city?city=" + ListElementsArrayList.get(index) + "&state=California&country=USA&key=afe5e23e-0c0a-4932-afbb-1af1e415413c");
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                     BufferedReader reader =
@@ -296,6 +307,8 @@ public class DashboardFragment extends Fragment{
                     while ((tmp = reader.readLine()) != null)
                         json.append(tmp).append("\n");
                     reader.close();
+
+                    //System.out.println(json.toString());
 
                     jsonObject = new JSONObject(json.toString());
                     JSONObject values = jsonObject.getJSONObject("data");

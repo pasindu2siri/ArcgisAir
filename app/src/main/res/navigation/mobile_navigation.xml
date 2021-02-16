@@ -5,11 +5,7 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_home">
 
-    <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.arcgisair.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+
 
     <fragment
         android:id="@+id/navigation_dashboard"
@@ -22,10 +18,16 @@
     </fragment>
 
     <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.arcgisair.ui.home.HomeFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
         android:id="@+id/navigation_notifications"
-        android:name="com.example.arcgisair.ui.notifications.NotificationsFragment"
+        android:name="com.example.arcgisair.ui.profile.ProfileFragment"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/test2" />
 
     <fragment
         android:id="@+id/navigation_location"
