@@ -20,6 +20,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.BasemapStyle;
+import com.esri.arcgisruntime.mapping.Viewpoint;
+import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.portal.Portal;
+import com.esri.arcgisruntime.portal.PortalItem;
+import com.example.arcgisair.BuildConfig;
 import com.example.arcgisair.R;
 import com.example.arcgisair.models.AirQualityNote;
 import com.example.arcgisair.ui.dashboard.DashboardFragment;
@@ -53,7 +62,6 @@ public class ProfileFragment extends Fragment {
 
 
     View root;
-    TextView latitude, longitude;
     TextView textCity;
     TextView mainPollutant;
     TextView textDescription;
@@ -66,6 +74,9 @@ public class ProfileFragment extends Fragment {
     TextView textHumidity;
     TextView textPressure;
     AirQualityNote newNote;
+    MapView mMapView;
+
+
 
 
 
@@ -76,11 +87,13 @@ public class ProfileFragment extends Fragment {
                 new ViewModelProvider(this).get(ProfileViewModel.class);
         root = inflater.inflate(R.layout.fragment_profile, container, false);
 
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
 
-        latitude = root.findViewById(R.id.latitude);
-        longitude = root.findViewById(R.id.longitude);
+        mMapView = root.findViewById(R.id.pmapView);
         getLastLocation();
+
+
 
         textCity = root.findViewById(R.id.city);
         imageView = root.findViewById(R.id.card_view_image);
@@ -93,6 +106,8 @@ public class ProfileFragment extends Fragment {
         textWind = root.findViewById(R.id.wind);
         textHumidity = root.findViewById(R.id.humidity);
         textPressure = root.findViewById(R.id.pressure);
+
+
 
 
         return root;
@@ -210,8 +225,16 @@ public class ProfileFragment extends Fragment {
                             requestNewLocationData();
                         } else {
                             getJSON(location.getLatitude(), location.getLongitude());
-                            latitude.setText(location.getLatitude() + "");
-                            longitude.setText(location.getLongitude() + "");
+                            String itemId = "1311ed6d637546c792f175f6f0b34699";
+                            String url = "https://www.arcgis.com/sharing/rest/content/items/" + itemId + "/data";
+                            ArcGISMap map = new ArcGISMap(url);
+                            mMapView.setMap(map);
+                            mMapView.setViewpoint(new Viewpoint(location.getLatitude(), location.getLongitude(), 500000));
+
+                            ArcGISRuntimeEnvironment.setLicense("runtimelite,1000,rud1048958025,none,ZZ0RJAY3FPGEGTJ89137");
+
+
+
                         }
                     }
                 });
@@ -274,8 +297,8 @@ public class ProfileFragment extends Fragment {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             Location mLastLocation = locationResult.getLastLocation();
-            latitude.setText("Latitude: " + mLastLocation.getLatitude() + "");
-            longitude.setText("Longitude: " + mLastLocation.getLongitude() + "");
+//            latitude.setText("Latitude: " + mLastLocation.getLatitude() + "");
+//            longitude.setText("Longitude: " + mLastLocation.getLongitude() + "");
         }
     };
 
@@ -316,11 +339,4 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (checkPermissions()) {
-            getLastLocation();
-        }
-    }
 }
