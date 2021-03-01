@@ -45,6 +45,17 @@ import com.example.arcgisair.MainActivity;
 import com.example.arcgisair.R;
 import com.example.arcgisair.models.AirQualityNote;
 import com.example.arcgisair.models.DummyDataReader;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -65,17 +76,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 
-public class DashboardFragment extends Fragment{
+public class DashboardFragment extends Fragment {
 
 
     private DashboardViewModel dashboardViewModel;
     private GridLayoutManager gridLayoutManager;
     private RecyclerView mRecyclerView;
     private static RecyclerView.Adapter adapter;
+
+    private FirebaseFirestore db;
+
 
     View root;
 
@@ -84,10 +101,9 @@ public class DashboardFragment extends Fragment{
     ImageView addButton;
 
 
-
     ArrayList data;
-    String[] ListElements;
-    List<String> ListElementsArrayList;
+
+    List<String> ListElementsArrayList = new ArrayList<>();
 
     @SuppressLint("ResourceType")
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -99,96 +115,110 @@ public class DashboardFragment extends Fragment{
         mRecyclerView = (RecyclerView) root.findViewById(R.id.recyclerView);
 
 
-        gridLayoutManager = new  GridLayoutManager(getActivity(), 1);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+        DocumentReference citiesDocument = firebaseFirestore.collection("Cities").document(user.getUid());
+
+
+        gridLayoutManager = new GridLayoutManager(getActivity(), 1);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-
-
-
         mRecyclerView.setLayoutManager(gridLayoutManager);
         MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.showBottomNav();
 
-
-
-
-
         addButton = root.findViewById(R.id.addButton);
+//        addButton.setOnClickListener(new View.OnClickListener() {
+//
+//            public void onClick(View view) {
+//
+//                final String[] m_Text = {""};
+//
+//                AlertDialog.Builder builder = new AlertDialog.Builder(root.getContext());
+//                builder.setTitle("Add City");
+//
+//                // Set up the input
+//                final EditText input = new EditText(root.getContext());
+//                input.setInputType(InputType.TYPE_CLASS_TEXT);
+//                builder.setView(input);
+//
+//                // Set up the buttons
+//                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        m_Text[0] = input.getText().toString();
+//                        if (cities.contains(m_Text[0]) && !(ListElementsArrayList.contains(m_Text[0]))) {
+//                            ListElementsArrayList.add(m_Text[0]);
+//                            adapter.notifyDataSetChanged();
+//                            getJSON(ListElementsArrayList.size() - 1);
+//                            citiesDocument.update("Cities", FieldValue.arrayUnion(m_Text[0]));
+//
+//                        }
+//                    }
+//                });
+//                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.cancel();
+//                    }
+//                });
+//
+//                builder.show();
+//            }
+//
+//
+//        });
 
-        addButton.setOnClickListener(new View.OnClickListener() {
+        citiesDocument.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
 
-            public void onClick(View view) {
+                    Log.d(TAG, "DocumentSnapshot data: " + doc.getData());
+                    if(doc.contains("Cities")) {
+                        List<String> cities = (List<String>) doc.get("Cities");
+                        for (String city : cities) {
+                            ListElementsArrayList.add(city);
+                            Collections.sort(ListElementsArrayList);
 
-                final String[] m_Text = {""};
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(root.getContext());
-                builder.setTitle("Add City");
-
-                // Set up the input
-                final EditText input = new EditText(root.getContext());
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
-
-                // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        m_Text[0] = input.getText().toString();
-                        if(cities.contains(m_Text[0]) && !(ListElementsArrayList.contains(m_Text[0]))) {
-                            ListElementsArrayList.add(m_Text[0]);
-                            adapter.notifyDataSetChanged();
-                            getJSON(ListElementsArrayList.size()-1);
                         }
                     }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+
+
+
+                }
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
+                    public void onFailure(@NonNull Exception e) {
+
                     }
                 });
+//        String citiesList = new DummyDataReader(getActivity()).ReadTextFromFile("cities.txt");
+//
+//
+//
+//        ListElements = (citiesList.split(","));
+//        ListElementsArrayList = new ArrayList<>(Arrays.asList(ListElements));
 
-                builder.show();
-            }
-
-
-        });
-
-
-        String citiesList = new DummyDataReader(getActivity()).ReadTextFromFile("cities.txt");
-
-
-
-        ListElements = (citiesList.split(","));
-
-
-        ListElementsArrayList = new ArrayList<>(Arrays.asList(ListElements));
-        data = new ArrayList<AirQualityNote>();
-        Collections.sort(ListElementsArrayList);
-
-
-        for (int i = 0; i < ListElementsArrayList.size(); i++)
-        {
-            getJSON(i);
-        }
 
         cities = new ArrayList<String>();
-        cities.addAll(Arrays.asList("Agoura Hills", "Alhambra", "Arcadia", "Artesia", "Avalon", "Azusa", "Baldwin Park", "Bell", "Bell Gardens", "Bellflower", "Beverly Hills", "Bradbury", "Burbank", "Calabasas", "Carson", "Cerritos", "Claremont", "Commerce", "Compton", "Covina", "Cudahy", "Culver City", "Diamond Bar", "Downey", "Duarte", "El Monte", "El Segundo", "Gardena", "Glendale", "Glendora", "Hawaiian Gardens", "Hawthorne", "Hermosa Beach", "Hidden Hills", "Huntington Park" ,"Industry" ,"Inglewood", "Irwindale", "La Cañada" , "Flintridge" , "La Habra Heights", "La Mirada", "La Puente" ,"La Verne", "Lakewood", "Lancaster", "Lawndale" ,"Lomita", "Long Beach" ,"Los Angeles", "Lynwood", "Malibu", "Manhattan" , "BeachMaywood", "Monrovia", "Montebello", "Monterey Park", "Norwalk",  "Palmdale", "Palos Verdes Estates", "Paramount", "Pasadena", "Pico Rivera", "Pomona", "Rancho Palos Verdes", "Redondo Beach", "Rolling Hills", "Rolling Hills Estates", "Rosemead", "San Dimas", "San Fernando", "San Gabriel",  "San Marino", "Santa Clarita", "Santa Fe Springs", "Santa Monica", "Sierra Madre", "Signal Hill", "South El Monte", "South Gate" ,"South Pasadena", "Temple City" ,"Torrance" , "Vernon", "Walnut", "West Covina",  "West Hollywood", "Westlake Village", "Whittier"));
+        cities.addAll(Arrays.asList("Agoura Hills", "Alhambra", "Arcadia", "Artesia", "Avalon", "Azusa", "Baldwin Park", "Bell", "Bell Gardens", "Bellflower", "Beverly Hills", "Bradbury", "Burbank", "Calabasas", "Carson", "Cerritos", "Claremont", "Commerce", "Compton", "Covina", "Cudahy", "Culver City", "Diamond Bar", "Downey", "Duarte", "El Monte", "El Segundo", "Gardena", "Glendale", "Glendora", "Hawaiian Gardens", "Hawthorne", "Hermosa Beach", "Hidden Hills", "Huntington Park", "Industry", "Inglewood", "Irwindale", "La Cañada", "Flintridge", "La Habra Heights", "La Mirada", "La Puente", "La Verne", "Lakewood", "Lancaster", "Lawndale", "Lomita", "Long Beach", "Los Angeles", "Lynwood", "Malibu", "Manhattan", "BeachMaywood", "Monrovia", "Montebello", "Monterey Park", "Norwalk", "Palmdale", "Palos Verdes Estates", "Paramount", "Pasadena", "Pico Rivera", "Pomona", "Rancho Palos Verdes", "Redondo Beach", "Rolling Hills", "Rolling Hills Estates", "Rosemead", "San Dimas", "San Fernando", "San Gabriel", "San Marino", "Santa Clarita", "Santa Fe Springs", "Santa Monica", "Sierra Madre", "Signal Hill", "South El Monte", "South Gate", "South Pasadena", "Temple City", "Torrance", "Vernon", "Walnut", "West Covina", "West Hollywood", "Westlake Village", "Whittier"));
 
         return root;
     }
 
-    public class CustomAdapter extends RecyclerView.Adapter<DashboardFragment.CustomAdapter.ViewHolder>
-    {
+    public class CustomAdapter extends RecyclerView.Adapter<DashboardFragment.CustomAdapter.ViewHolder> {
         private ArrayList<AirQualityNote> dataList;
 
 
-        public CustomAdapter(ArrayList<AirQualityNote> data)
-        {
+        public CustomAdapter(ArrayList<AirQualityNote> data) {
             this.dataList = data;
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder
-        {
+        public class ViewHolder extends RecyclerView.ViewHolder {
             TextView textCity;
             TextView mainPollutant;
             TextView textDescription;
@@ -201,15 +231,14 @@ public class DashboardFragment extends Fragment{
             TextView textHumidity;
             TextView textPressure;
 
-            public ViewHolder(View itemView)
-            {
+            public ViewHolder(View itemView) {
                 super(itemView);
                 this.textCity = itemView.findViewById(R.id.city);
                 this.imageView = itemView.findViewById(R.id.card_view_image);
                 this.textAQI = itemView.findViewById(R.id.AQI);
                 this.textDescription = itemView.findViewById(R.id.description);
                 this.mainPollutant = itemView.findViewById(R.id.mainPollutant);
-                this.linearLayout =  itemView.findViewById(R.id.card_layout);
+                this.linearLayout = itemView.findViewById(R.id.card_layout);
                 this.cardView = itemView.findViewById(R.id.card_view);
                 this.textWeather = itemView.findViewById(R.id.weather);
                 this.textWind = itemView.findViewById(R.id.wind);
@@ -219,8 +248,7 @@ public class DashboardFragment extends Fragment{
         }
 
         @Override
-        public DashboardFragment.CustomAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
-        {
+        public DashboardFragment.CustomAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aqi_card, parent, false);
 
             DashboardFragment.CustomAdapter.ViewHolder viewHolder = new ViewHolder(view);
@@ -229,22 +257,21 @@ public class DashboardFragment extends Fragment{
 
 
         @Override
-        public void onBindViewHolder(DashboardFragment.CustomAdapter.ViewHolder holder, final int position)
-        {
+        public void onBindViewHolder(DashboardFragment.CustomAdapter.ViewHolder holder, final int position) {
             holder.textCity.setText(dataList.get(position).getCity());
             holder.textAQI.setText("AQI: " + (dataList.get(position).getAQI()));
             holder.textWeather.setText(String.valueOf(dataList.get(position).getWeather()));
             holder.textWind.setText(String.valueOf(dataList.get(position).getWind()));
             holder.textHumidity.setText((dataList.get(position).getHumidity()) + " %");
             holder.textPressure.setText((dataList.get(position).getPressure()) + " hpa");
-            holder.mainPollutant.setText("Main Pollutant: "  + dataList.get(position).getPollutant());
+            holder.mainPollutant.setText("Main Pollutant: " + dataList.get(position).getPollutant());
 
 
-            if(dataList.get(position).getAQI() < 50 ){
+            if (dataList.get(position).getAQI() < 50) {
                 holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.healthy));
                 holder.textDescription.setText("Good");
                 holder.imageView.setImageResource(R.drawable.face0);
-            } else if(dataList.get(position).getAQI() >= 50 || dataList.get(position).getAQI() < 100 ){
+            } else if (dataList.get(position).getAQI() >= 50 || dataList.get(position).getAQI() < 100) {
                 holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.unhealthy));
                 holder.textDescription.setText("Fair");
                 holder.imageView.setImageResource(R.drawable.face50);
@@ -255,29 +282,26 @@ public class DashboardFragment extends Fragment{
             }
 
 
-
-            holder.itemView.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    Toast.makeText(getActivity(), "Item " + position + " is clicked.", Toast.LENGTH_SHORT).show();
-                    Bundle bundle = new Bundle();
-                    bundle.putDouble("Longitude", dataList.get(position).getLongitude());
-                    bundle.putDouble("Latitude", dataList.get(position).getLatitude());
-                    bundle.putString("City", dataList.get(position).getCity());
-
-                    Navigation.findNavController(root).navigate(R.id.action_navigation_dashboard_to_navigation_location, bundle );
-
-                }
-            });
+//            holder.itemView.setOnClickListener(new View.OnClickListener()
+//            {
+//                @Override
+//                public void onClick(View v)
+//                {
+//                    Toast.makeText(getActivity(), "Item " + position + " is clicked.", Toast.LENGTH_SHORT).show();
+//                    Bundle bundle = new Bundle();
+//                    bundle.putDouble("Longitude", dataList.get(position).getLongitude());
+//                    bundle.putDouble("Latitude", dataList.get(position).getLatitude());
+//                    bundle.putString("City", dataList.get(position).getCity());
+//
+//                    Navigation.findNavController(root).navigate(R.id.action_navigation_dashboard_to_navigation_location, bundle );
+//
+//                }
+//            });
         }
 
 
-
         @Override
-        public int getItemCount()
-        {
+        public int getItemCount() {
             return dataList.size();
         }
     }
@@ -290,6 +314,7 @@ public class DashboardFragment extends Fragment{
                 super.onPreExecute();
 
             }
+
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             protected Void doInBackground(Void... params) {
@@ -317,33 +342,33 @@ public class DashboardFragment extends Fragment{
                     int AQI = values.getJSONObject("current").getJSONObject("pollution").getInt("aqius");
                     String mainPollutant = values.getJSONObject("current").getJSONObject("pollution").getString("mainus");
                     String pollutant;
-                    if(mainPollutant.equals("p1")){
+                    if (mainPollutant.equals("p1")) {
                         pollutant = "PM10";
-                    } else if(mainPollutant.equals("p2")) {
+                    } else if (mainPollutant.equals("p2")) {
                         pollutant = "PM2.5";
-                    } else if(mainPollutant.equals("o3")) {
+                    } else if (mainPollutant.equals("o3")) {
                         pollutant = "Ozone (O3)";
-                    } else if(mainPollutant.equals("n2")) {
+                    } else if (mainPollutant.equals("n2")) {
                         pollutant = "Nitrogen Dioxide (NO2)";
-                    } else if(mainPollutant.equals("s2")) {
+                    } else if (mainPollutant.equals("s2")) {
                         pollutant = "Sulfur Dioxide (SO2)";
                     } else {
                         pollutant = "Carbon Monoxide (CO)";
                     }
 
                     double longitude = values.getJSONObject("location").getJSONArray("coordinates").getDouble(0);
-                    double latitude= values.getJSONObject("location").getJSONArray("coordinates").getDouble(1);
+                    double latitude = values.getJSONObject("location").getJSONArray("coordinates").getDouble(1);
                     int Celsius = values.getJSONObject("current").getJSONObject("weather").getInt("tp");
 
-                    int weather = Celsius * (9/ 5) + 32;
+                    int weather = Celsius * (9 / 5) + 32;
                     String windSpeed = String.valueOf(values.getJSONObject("current").getJSONObject("weather").getInt("ws"));
                     int wind = values.getJSONObject("current").getJSONObject("weather").getInt("wd");
                     String totalWind;
-                    if(wind >  270){
+                    if (wind > 270) {
                         totalWind = "NW " + wind;
-                    } else if( wind > 180){
+                    } else if (wind > 180) {
                         totalWind = "SW " + wind;
-                    }else if( wind > 180){
+                    } else if (wind > 180) {
                         totalWind = "SE " + wind;
                     } else {
                         totalWind = "NE " + wind;
@@ -353,7 +378,7 @@ public class DashboardFragment extends Fragment{
                     int pressure = values.getJSONObject("current").getJSONObject("weather").getInt("pr");
 
 
-                    AirQualityNote newNote = new AirQualityNote(city, AQI, longitude, latitude, pollutant, weather, totalWind, humidity, pressure,  index);
+                    AirQualityNote newNote = new AirQualityNote(city, AQI, longitude, latitude, pollutant, weather, totalWind, humidity, pressure, index);
 
 
                     data.add(newNote);
@@ -378,6 +403,14 @@ public class DashboardFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+        DocumentReference citiesDocument = firebaseFirestore.collection("Cities").document(user.getUid());
+        data = new ArrayList<AirQualityNote>();
+
+        for (int i = 0; i < ListElementsArrayList.size(); i++) {
+            getJSON(i);
+        }
 
         setHasOptionsMenu(false);
     }

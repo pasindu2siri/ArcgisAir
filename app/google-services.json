@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "283265792113",
+    "project_id": "arcgisair2021",
+    "storage_bucket": "arcgisair2021.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283265792113:android:b3381e980fa56c12a743d0",
+        "android_client_info": {
+          "package_name": "com.example.arcgisair"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "283265792113-o87p2ev28btbq9vr3639um8mup3gasnl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.arcgisair",
+            "certificate_hash": "e1c6f03c10cd80de0919eebf55532ca54048a7e5"
+          }
+        },
+        {
+          "client_id": "283265792113-hhghdstjlnidv7n8i5bf78nnjkd3agkb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoSGvfDgpP3UYNb11sycD1w7zl-esq0KI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "283265792113-hhghdstjlnidv7n8i5bf78nnjkd3agkb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

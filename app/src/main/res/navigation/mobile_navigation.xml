@@ -12,9 +12,6 @@
         android:name="com.example.arcgisair.ui.dashboard.DashboardFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_dashboard" >
-        <action
-            android:id="@+id/action_navigation_dashboard_to_navigation_location"
-            app:destination="@id/navigation_location" />
     </fragment>
 
     <fragment
@@ -29,14 +26,7 @@
         android:label="@string/title_notifications"
         tools:layout="@layout/test2" />
 
-    <fragment
-        android:id="@+id/navigation_location"
-        android:name="com.example.arcgisair.ui.location.LocationFragment"
-        android:label="Locations">
-        <action
-            android:id="@+id/action_navigation_location_to_navigation_dashboard2"
-            app:popUpTo="@id/navigation_dashboard" />
-    </fragment>
+
 
 
 </navigation>
