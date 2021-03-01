@@ -46,7 +46,19 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
+
+
+        <ImageView
+            android:padding="8dp"
+            android:id="@+id/logoutBtn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/enter"
+            android:clickable="true"
+            android:focusable="true"/>
+
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

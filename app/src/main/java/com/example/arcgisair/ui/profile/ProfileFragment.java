@@ -16,9 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
@@ -29,9 +31,20 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.portal.Portal;
 import com.esri.arcgisruntime.portal.PortalItem;
 import com.example.arcgisair.BuildConfig;
+import com.example.arcgisair.LoginActivity;
+import com.example.arcgisair.MainActivity;
 import com.example.arcgisair.R;
 import com.example.arcgisair.models.AirQualityNote;
 import com.example.arcgisair.ui.dashboard.DashboardFragment;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -39,6 +52,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -55,7 +69,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener {
 
     private ProfileViewModel profileViewModel;
     FusedLocationProviderClient mFusedLocationClient;
@@ -74,7 +88,12 @@ public class ProfileFragment extends Fragment {
     TextView textHumidity;
     TextView textPressure;
     AirQualityNote newNote;
+    ImageView logoutBtn;
     MapView mMapView;
+
+    private GoogleApiClient googleApiClient;
+    private GoogleSignInOptions gso;
+
 
 
 
@@ -106,8 +125,36 @@ public class ProfileFragment extends Fragment {
         textWind = root.findViewById(R.id.wind);
         textHumidity = root.findViewById(R.id.humidity);
         textPressure = root.findViewById(R.id.pressure);
+        logoutBtn = root.findViewById(R.id.logoutBtn);
+
+        gso =  new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        googleApiClient=new GoogleApiClient.Builder(getContext())
+                .enableAutoManage(getActivity(),this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API,gso)
+                .build();
 
 
+        logoutBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                FirebaseAuth.getInstance().signOut();
+                Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
+                        new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(Status status) {
+                                if (status.isSuccess()){
+                                    gotoMainActivity();
+                                }else{
+                                    Toast.makeText(getContext(),"Session not close",Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
+            }
+        });
 
 
         return root;
@@ -337,6 +384,46 @@ public class ProfileFragment extends Fragment {
                 getLastLocation();
             }
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        OptionalPendingResult<GoogleSignInResult> opr= Auth.GoogleSignInApi.silentSignIn(googleApiClient);
+        if(opr.isDone()){
+            GoogleSignInResult result=opr.get();
+            handleSignInResult(result);
+        }else{
+            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                @Override
+                public void onResult(@NonNull GoogleSignInResult googleSignInResult) {
+                    handleSignInResult(googleSignInResult);
+                }
+            });
+        }
+    }
+    private void handleSignInResult(GoogleSignInResult result){
+        if(result.isSuccess()){
+            GoogleSignInAccount account=result.getSignInAccount();
+        }else{
+            gotoMainActivity();
+        }
+    }
+    private void gotoMainActivity(){
+        Intent intent=new Intent(getContext(), LoginActivity.class);
+
+        startActivity(intent);
+    }
+
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        googleApiClient.stopAutoManage(getActivity());
+        googleApiClient.disconnect();
     }
 
 }
