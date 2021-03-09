@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+/*
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
         DocumentReference docIdRef = rootRef.collection("Users").document(user.getUid());
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
+*/
 
 
         setContentView(R.layout.activity_main);
