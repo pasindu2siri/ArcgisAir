@@ -15,6 +15,12 @@
     </fragment>
 
     <fragment
+        android:id="@+id/navigation_news"
+        android:name="com.example.arcgisair.ui.news.NewsFragment"
+        android:label="@string/title_news"
+        tools:layout="@layout/fragment_news" />
+
+    <fragment
         android:id="@+id/navigation_home"
         android:name="com.example.arcgisair.ui.home.HomeFragment"
         android:label="@string/title_home"
@@ -23,7 +29,7 @@
     <fragment
         android:id="@+id/navigation_notifications"
         android:name="com.example.arcgisair.ui.profile.ProfileFragment"
-        android:label="@string/title_notifications"
+        android:label="@string/title_profile"
         tools:layout="@layout/test2" />
 
 
