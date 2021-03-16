@@ -61,7 +61,6 @@ public class DashboardFragment extends Fragment {
     ImageView addButton;
 
     ArrayList data;
-    String[] ListElements;
     List<String> ListElementsArrayList;
 
 
@@ -89,8 +88,6 @@ public class DashboardFragment extends Fragment {
         ListElementsArrayList = new ArrayList<>();
 
         addButton = root.findViewById(R.id.addButton);
-
-
         addButton.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
@@ -132,11 +129,6 @@ public class DashboardFragment extends Fragment {
 
 
         });
-
-
-
-
-
         docIdRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -158,7 +150,6 @@ public class DashboardFragment extends Fragment {
         });
 
 
-
         cities = new ArrayList<String>();
         cities.addAll(Arrays.asList("Agoura Hills", "Alhambra", "Arcadia", "Artesia", "Avalon", "Azusa", "Baldwin Park", "Bell", "Bell Gardens", "Bellflower", "Beverly Hills", "Bradbury", "Burbank", "Calabasas", "Carson", "Cerritos", "Claremont", "Commerce", "Compton", "Covina", "Cudahy", "Culver City", "Diamond Bar", "Downey", "Duarte", "El Monte", "El Segundo", "Gardena", "Glendale", "Glendora", "Hawaiian Gardens", "Hawthorne", "Hermosa Beach", "Hidden Hills", "Huntington Park", "Industry", "Inglewood", "Irwindale", "La Cañada", "Flintridge", "La Habra Heights", "La Mirada", "La Puente", "La Verne", "Lakewood", "Lancaster", "Lawndale", "Lomita", "Long Beach", "Los Angeles", "Lynwood", "Malibu", "Manhattan", "BeachMaywood", "Monrovia", "Montebello", "Monterey Park", "Norwalk", "Palmdale", "Palos Verdes Estates", "Paramount", "Pasadena", "Pico Rivera", "Pomona", "Rancho Palos Verdes", "Redondo Beach", "Rolling Hills", "Rolling Hills Estates", "Rosemead", "San Dimas", "San Fernando", "San Gabriel", "San Marino", "Santa Clarita", "Santa Fe Springs", "Santa Monica", "Sierra Madre", "Signal Hill", "South El Monte", "South Gate", "South Pasadena", "Temple City", "Torrance", "Vernon", "Walnut", "West Covina", "West Hollywood", "Westlake Village", "Whittier"));
 
@@ -168,7 +159,6 @@ public class DashboardFragment extends Fragment {
     public class CustomAdapter extends RecyclerView.Adapter<DashboardFragment.CustomAdapter.ViewHolder> {
         private ArrayList<AirQualityNote> dataList;
         private ImageButton deleteButton;
-
 
 
         public CustomAdapter(ArrayList<AirQualityNote> data) {
@@ -212,10 +202,10 @@ public class DashboardFragment extends Fragment {
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                     FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
                     DocumentReference docIdRef = rootRef.collection("Users").document(user.getUid());
+
                     @Override
                     public void onClick(View view) {
                         int position = ListElementsArrayList.indexOf((String) textCity.getText());
-
 
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(root.getContext());
@@ -241,64 +231,56 @@ public class DashboardFragment extends Fragment {
                         });
 
                         builder.show();
-
                     }
-
                 });
-
-
             }
-
-
-    }
-
-
-    @Override
-    public DashboardFragment.CustomAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aqi_card, parent, false);
-
-        DashboardFragment.CustomAdapter.ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
-    }
-
-
-    @Override
-    public void onBindViewHolder(DashboardFragment.CustomAdapter.ViewHolder holder, final int position) {
-        holder.textCity.setText(dataList.get(position).getCity());
-        holder.textAQI.setText("AQI: " + (dataList.get(position).getAQI()));
-        holder.textWeather.setText(String.valueOf(dataList.get(position).getWeather()));
-        holder.textWind.setText(String.valueOf(dataList.get(position).getWind()));
-        holder.textHumidity.setText((dataList.get(position).getHumidity()) + " %");
-        holder.textPressure.setText((dataList.get(position).getPressure()) + " hpa");
-        holder.mainPollutant.setText("Main Pollutant: " + dataList.get(position).getPollutant());
-
-
-        if (dataList.get(position).getAQI() < 50) {
-            holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.healthy));
-            holder.textDescription.setText("Good");
-            holder.imageView.setImageResource(R.drawable.face0);
-        } else if (dataList.get(position).getAQI() >= 50 || dataList.get(position).getAQI() < 100) {
-            holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.unhealthy));
-            holder.textDescription.setText("Fair");
-            holder.imageView.setImageResource(R.drawable.face50);
-        } else {
-            holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.danger));
-            holder.textDescription.setText("Bad");
-            holder.imageView.setImageResource(R.drawable.face100);
         }
 
 
+        @Override
+        public DashboardFragment.CustomAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aqi_card, parent, false);
 
+            DashboardFragment.CustomAdapter.ViewHolder viewHolder = new ViewHolder(view);
+            return viewHolder;
+        }
+
+
+        @Override
+        public void onBindViewHolder(DashboardFragment.CustomAdapter.ViewHolder holder, final int position) {
+            holder.textCity.setText(dataList.get(position).getCity());
+            holder.textAQI.setText("AQI: " + (dataList.get(position).getAQI()));
+            holder.textWeather.setText(String.valueOf(dataList.get(position).getWeather()));
+            holder.textWind.setText(String.valueOf(dataList.get(position).getWind()));
+            holder.textHumidity.setText((dataList.get(position).getHumidity()) + " %");
+            holder.textPressure.setText((dataList.get(position).getPressure()) + " hpa");
+            holder.mainPollutant.setText("Main Pollutant: " + dataList.get(position).getPollutant());
+
+
+            if (dataList.get(position).getAQI() < 50) {
+                holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.healthy));
+                holder.textDescription.setText("Good");
+                holder.imageView.setImageResource(R.drawable.face0);
+            } else if (dataList.get(position).getAQI() >= 50 || dataList.get(position).getAQI() < 100) {
+                holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.unhealthy));
+                holder.textDescription.setText("Fair");
+                holder.imageView.setImageResource(R.drawable.face50);
+            } else {
+                holder.cardView.setCardBackgroundColor(getResources().getColor(R.color.danger));
+                holder.textDescription.setText("Bad");
+                holder.imageView.setImageResource(R.drawable.face100);
+            }
+
+
+        }
+
+
+        @Override
+        public int getItemCount() {
+            return dataList.size();
+        }
 
     }
-
-
-    @Override
-    public int getItemCount() {
-        return dataList.size();
-    }
-
-}
 
     @SuppressLint("StaticFieldLeak")
     public void getJSON(final int index) {

@@ -424,6 +424,14 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
         super.onPause();
         googleApiClient.stopAutoManage(getActivity());
         googleApiClient.disconnect();
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        googleApiClient.stopAutoManage(getActivity());
+        googleApiClient.disconnect();
     }
 
 }
