@@ -51,8 +51,7 @@ public class HomeFragment extends Fragment {
                     result = geocodeResultFuture.get();
                     double latitude = result.get(0).getDisplayLocation().getY();
                     double longitude = result.get(0).getDisplayLocation().getX();
-                    Point area = new Point(-14093.0, 6711377.0,0);
-                    mMapView.setViewpoint(new Viewpoint(latitude,longitude,7500));
+                    mMapView.setViewpoint(new Viewpoint(latitude,longitude,500000));
 
                 }
                 catch (Exception e){
