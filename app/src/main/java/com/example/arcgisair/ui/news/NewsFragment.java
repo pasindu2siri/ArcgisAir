@@ -148,7 +148,7 @@ public class NewsFragment extends Fragment {
                     OkHttpClient client = new OkHttpClient();
 
                     Request request = new Request.Builder()
-                            .url("https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/NewsSearchAPI?q=air%20pollution%2C%20air%20quality%2C%20US&pageNumber=1&pageSize=20&autoCorrect=true&withThumbnails=true&fromPublishedDate=2021-03-01&toPublishedDate=null")
+                            .url("https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/NewsSearchAPI?q=air%20pollution%2C%20air%20quality%2C%20US&pageNumber=1&pageSize=30&autoCorrect=true&withThumbnails=true&fromPublishedDate=2021-03-10&toPublishedDate=null")
                             .get()
                             .addHeader("x-rapidapi-key", "a0b2b57f19mshc9cd08ccc8e0847p1807aejsnf5bdb34bc5e4")
                             .addHeader("x-rapidapi-host", "contextualwebsearch-websearch-v1.p.rapidapi.com")
@@ -174,7 +174,7 @@ public class NewsFragment extends Fragment {
 
                         if (imageUrl.substring(imageUrl.length() - 3, imageUrl.length()).equals("jpg")) {
                             NewsNote newsNote = new NewsNote(id, description, imageUrl, date, title, webUrl, provider);
-                            newsNote.printAll();
+                            //newsNote.printAll();
                             data.add(newsNote);
                         }
                     }
