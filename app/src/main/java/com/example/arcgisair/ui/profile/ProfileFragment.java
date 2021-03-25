@@ -88,7 +88,7 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
     TextView textHumidity;
     TextView textPressure;
     AirQualityNote newNote;
-    ImageView logoutBtn;
+    Button btnLogOut;
     MapView mMapView;
 
     private GoogleApiClient googleApiClient;
@@ -125,7 +125,7 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
         textWind = root.findViewById(R.id.wind);
         textHumidity = root.findViewById(R.id.humidity);
         textPressure = root.findViewById(R.id.pressure);
-        logoutBtn = root.findViewById(R.id.logoutBtn);
+        btnLogOut = root.findViewById(R.id.btnLogOut);
 
         gso =  new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -137,22 +137,13 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
                 .build();
 
 
-        logoutBtn.setOnClickListener(new View.OnClickListener() {
-
+        btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 FirebaseAuth.getInstance().signOut();
-                Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
-                        new ResultCallback<Status>() {
-                            @Override
-                            public void onResult(Status status) {
-                                if (status.isSuccess()){
-                                    gotoMainActivity();
-                                }else{
-                                    Toast.makeText(getContext(),"Session not close",Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        });
+                gotoMainActivity();
+
             }
         });
 
