@@ -69,7 +69,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 
-public class ProfileFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener {
+public class ProfileFragment extends Fragment {
 
     private ProfileViewModel profileViewModel;
     FusedLocationProviderClient mFusedLocationClient;
@@ -90,9 +90,6 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
     AirQualityNote newNote;
     Button btnLogOut;
     MapView mMapView;
-
-    private GoogleApiClient googleApiClient;
-    private GoogleSignInOptions gso;
 
 
 
@@ -127,14 +124,7 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
         textPressure = root.findViewById(R.id.pressure);
         btnLogOut = root.findViewById(R.id.btnLogOut);
 
-        gso =  new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
 
-        googleApiClient=new GoogleApiClient.Builder(getContext())
-                .enableAutoManage(getActivity(),this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API,gso)
-                .build();
 
 
         btnLogOut.setOnClickListener(new View.OnClickListener() {
@@ -380,26 +370,8 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
     @Override
     public void onStart() {
         super.onStart();
-        OptionalPendingResult<GoogleSignInResult> opr= Auth.GoogleSignInApi.silentSignIn(googleApiClient);
-        if(opr.isDone()){
-            GoogleSignInResult result=opr.get();
-            handleSignInResult(result);
-        }else{
-            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(@NonNull GoogleSignInResult googleSignInResult) {
-                    handleSignInResult(googleSignInResult);
-                }
-            });
-        }
     }
-    private void handleSignInResult(GoogleSignInResult result){
-        if(result.isSuccess()){
-            GoogleSignInAccount account=result.getSignInAccount();
-        }else{
-            gotoMainActivity();
-        }
-    }
+
     private void gotoMainActivity(){
         Intent intent=new Intent(getContext(), LoginActivity.class);
 
@@ -413,16 +385,12 @@ public class ProfileFragment extends Fragment implements GoogleApiClient.OnConne
     @Override
     public void onPause() {
         super.onPause();
-        googleApiClient.stopAutoManage(getActivity());
-        googleApiClient.disconnect();
 
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        googleApiClient.stopAutoManage(getActivity());
-        googleApiClient.disconnect();
     }
 
 }
