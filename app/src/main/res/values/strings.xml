@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">ArcgisAir</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_locations"></string>
+
+
+
+
+    <string name="web_client_id">283265792113-hhghdstjlnidv7n8i5bf78nnjkd3agkb.apps.googleusercontent.com</string>
+
+</resources>

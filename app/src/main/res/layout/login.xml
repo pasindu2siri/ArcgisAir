@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/back">
+
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="178dp"
+        android:layout_height="140dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="59dp"
+        app:srcCompat="@drawable/finalogo" />
+
+    <EditText
+        android:id="@+id/Username"
+        android:layout_width="210dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/imageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"
+        android:drawableLeft="@drawable/ic_action_username"
+        android:inputType="textPersonName"
+        android:text="Username"
+        android:textSize="16dp"
+    android:hint="Username"
+        android:ems="10"
+        android:background="#4D000000"
+        />
+
+    <EditText
+        android:id="@+id/Password"
+        android:layout_width="210dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="38dp"
+        android:layout_below="@id/Username"
+        android:layout_alignStart="@id/Username"
+        android:layout_alignLeft="@id/Username"
+        android:background="#4D000000"
+        android:hint="Password"
+        android:ems="10"
+        android:textSize="16dp"
+        android:inputType="textPersonName"
+        android:drawableLeft="@drawable/ic_action_pass"
+        android:text="Password" />
+
+    <androidx.cardview.widget.CardView
+
+        android:layout_width="210dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/Password"
+        android:layout_centerHorizontal="true"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="10dp"
+        android:layout_marginTop="20dp"
+        android:background="#4D000000">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#2485B3">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Login"
+                android:textColor="#020101" />
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/sign_in_button"
+        android:layout_width="210dp"
+        android:layout_height="50dp"
+        android:layout_below="@id/Password"
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp">
+    </com.google.android.gms.common.SignInButton>
+</RelativeLayout>
