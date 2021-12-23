@@ -69,7 +69,7 @@ public class HomeFragment extends Fragment {
         mMapView = (MapView)root.findViewById(R.id.mapView);
 
 
-        String itemId = "1311ed6d637546c792f175f6f0b34699";
+        
         String url = "https://www.arcgis.com/sharing/rest/content/items/" + itemId + "/data";
         ArcGISMap map = new ArcGISMap(url);
         mMapView.setMap(map);
@@ -96,7 +96,7 @@ public class HomeFragment extends Fragment {
 
 
 
-        ArcGISRuntimeEnvironment.setLicense("runtimelite,1000,rud1048958025,none,ZZ0RJAY3FPGEGTJ89137");
+        
 
         return root;
     }
