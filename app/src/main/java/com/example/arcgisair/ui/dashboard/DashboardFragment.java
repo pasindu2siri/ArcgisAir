@@ -296,7 +296,6 @@ public class DashboardFragment extends Fragment {
             protected Void doInBackground(Void... params) {
                 try {
 
-                    URL url = new URL("https://api.airvisual.com/v2/city?city=" + ListElementsArrayList.get(index) + "&state=California&country=USA&key=afe5e23e-0c0a-4932-afbb-1af1e415413c");
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                     BufferedReader reader =
