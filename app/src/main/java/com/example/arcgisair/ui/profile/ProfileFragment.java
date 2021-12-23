@@ -155,7 +155,7 @@ public class ProfileFragment extends Fragment {
             @Override
             protected Void doInBackground(Void... params) {
                 try {
-                    URL url = new URL("https://api.airvisual.com/v2/nearest_city?lat="+latitude+"&lon="+longitude+"&key=afe5e23e-0c0a-4932-afbb-1af1e415413c");
+                    
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                     BufferedReader reader =
@@ -253,13 +253,13 @@ public class ProfileFragment extends Fragment {
                             requestNewLocationData();
                         } else {
                             getJSON(location.getLatitude(), location.getLongitude());
-                            String itemId = "1311ed6d637546c792f175f6f0b34699";
+                           
                             String url = "https://www.arcgis.com/sharing/rest/content/items/" + itemId + "/data";
                             ArcGISMap map = new ArcGISMap(url);
                             mMapView.setMap(map);
                             mMapView.setViewpoint(new Viewpoint(location.getLatitude(), location.getLongitude(), 500000));
 
-                            ArcGISRuntimeEnvironment.setLicense("runtimelite,1000,rud1048958025,none,ZZ0RJAY3FPGEGTJ89137");
+                            
 
 
 
