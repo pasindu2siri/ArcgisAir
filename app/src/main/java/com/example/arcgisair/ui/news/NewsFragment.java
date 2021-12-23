@@ -147,12 +147,7 @@ public class NewsFragment extends Fragment {
                 try {
                     OkHttpClient client = new OkHttpClient();
 
-                    Request request = new Request.Builder()
-                            .url("https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/NewsSearchAPI?q=air%20pollution%2C%20air%20quality%2C%20US&pageNumber=1&pageSize=30&autoCorrect=true&withThumbnails=true&fromPublishedDate=2021-03-10&toPublishedDate=null")
-                            .get()
-                            .addHeader("x-rapidapi-key", "a0b2b57f19mshc9cd08ccc8e0847p1807aejsnf5bdb34bc5e4")
-                            .addHeader("x-rapidapi-host", "contextualwebsearch-websearch-v1.p.rapidapi.com")
-                            .build();
+                    
 
                     Response response = client.newCall(request).execute();
                     String responseData = response.body().string();
